@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-12 animate-fade-in-up">
+    <div class="glass-panel p-8 rounded-2xl shadow-lg transition-all">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Create Account</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Join Align and digitize your high-performance workflow.</p>
+        </div>
+        
+        <form action="/register" method="POST" class="space-y-5">
+            <div>
+                <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">Full Name</label>
+                <input type="text" name="name" required class="w-full border border-slate-200 dark:border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white/60 dark:bg-slate-900/60 text-slate-900 dark:text-white transition-colors">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">Email Address</label>
+                <input type="email" name="email" required class="w-full border border-slate-200 dark:border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white/60 dark:bg-slate-900/60 text-slate-900 dark:text-white transition-colors">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
+                <input type="password" name="password" required class="w-full border border-slate-200 dark:border-slate-700 p-3 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white/60 dark:bg-slate-900/60 text-slate-900 dark:text-white transition-colors">
+            </div>
+            <button type="submit" class="w-full bg-slate-900 dark:bg-blue-600 text-white font-semibold py-3.5 rounded-xl hover:bg-slate-800 dark:hover:bg-blue-700 transition duration-300 shadow-md transform active:scale-95 mt-2">Get Started</button>
+        </form>
+        
+        <div class="mt-6 text-center text-sm font-medium text-slate-500 dark:text-slate-400">
+            Already have an account? <a href="/login" class="text-blue-600 dark:text-blue-400 hover:underline font-semibold">Log in</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
