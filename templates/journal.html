@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto animate-fade-in-up">
+    <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+            <h1 class="text-4xl font-extrabold text-slate-900 dark:text-white mb-2">My Reflection</h1>
+            <p class="text-slate-500 dark:text-slate-400 font-medium">Building the habit of proactive thinking.</p>
+        </div>
+        <div class="glass-panel px-6 py-3 rounded-2xl border-blue-500/20 flex gap-6">
+            <div class="text-center">
+                <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ journals|length }}</p>
+                <p class="text-[10px] uppercase font-bold text-slate-400">Entries</p>
+            </div>
+            <div class="text-center">
+                <p class="text-2xl font-bold text-green-500">{{ streak }}</p>
+                <p class="text-[10px] uppercase font-bold text-slate-400">Day Streak</p>
+            </div>
+        </div>
+    </header>
+    <section class="glass-panel p-6 rounded-2xl mb-8">
+    <h2 class="text-xs font-bold uppercase tracking-wider mb-4 text-slate-400">Mood Trend</h2>
+    <div class="h-32">
+        <canvas id="moodChart"></canvas>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('moodChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'], // ডাইনামিক করা যাবে
+            datasets: [{
+                label: 'Mood Level',
+                data: [3, 4, 2, 5, 4], // আপনার জার্নালের মুড ডেটা থেকে আসবে
+                borderColor: '#3b82f6',
+                tension: 0.4
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { display: false }, x: { display: false } } }
+    });
+</script>
+    <section class="glass-panel p-8 rounded-3xl shadow-xl border-slate-200/50 mb-12">
+        <form action="/add_journal" method="POST" class="space-y-6">
+            <div class="flex items-center gap-4">
+                <p class="text-sm font-bold text-slate-500 uppercase tracking-widest">How was your day?</p>
+                <div class="flex gap-3">
+                    {% for mood in ['😊', '🙂', '😐', '😔', '😤'] %}
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="mood" value="{{ mood }}" class="hidden peer" required>
+                        <span class="text-3xl grayscale group-hover:grayscale-0 peer-checked:grayscale-0 peer-checked:scale-125 transition-all">
+                            {{ mood }}
+                        </span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <textarea name="content" rows="6" placeholder="Document your breakthroughs, learnings, or challenges..." 
+                      class="w-full bg-slate-50 dark:bg-slate-900 border-none p-6 rounded-2xl text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 transition-all text-lg leading-relaxed shadow-inner"></textarea>
+            
+            <div class="flex justify-between items-center">
+                <p class="text-xs text-slate-400 italic">"Write to clarify your thoughts."</p>
+                <button type="submit" class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold px-10 py-4 rounded-full hover:scale-105 transition-transform shadow-lg">Save Reflection</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="space-y-6">
+        <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Recent Insights</h2>
+        
+        {% if not journals %}
+            <div class="text-center py-20 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
+                <p class="text-slate-400">Your journal is waiting. Start your journey today.</p>
+            </div>
+        {% endif %}
+
+        {% for journal in journals %}
+        <div class="group relative pl-8 border-l-2 border-slate-200 dark:border-slate-800 pb-10 last:border-0">
+            <div class="absolute -left-2.5 top-0 w-5 h-5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+            <div class="glass-panel p-8 rounded-3xl hover:border-blue-500/30 transition-all">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">{{ journal.mood or '📝' }}</span>
+                        <span class="text-xs font-bold text-slate-400">{{ journal.date }}</span>
+                    </div>
+                    <a href="/delete_journal/{{ journal.id }}" class="text-slate-300 hover:text-red-500 transition">Delete</a>
+                </div>
+                <p class="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">{{ journal.content }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

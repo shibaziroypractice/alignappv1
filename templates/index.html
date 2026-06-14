@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<header class="max-w-5xl mx-auto mb-8 animate-fade-in-up">
+    <div class="flex justify-between items-end border-b border-slate-200 dark:border-slate-800 pb-4 mb-6">
+        <div>
+            <h1 class="text-3xl font-light mb-1 text-slate-900 dark:text-white transition-colors">
+                Good <span id="greeting-time">day</span>, {{ current_user.name.split()[0] }}.
+            </h1>
+            <p class="text-slate-500 dark:text-slate-400 text-sm">Here is your focus for today.</p>
+        </div>
+        <div class="text-right text-slate-400 dark:text-slate-500 text-sm">
+            <p>Today</p>
+            <p class="font-semibold text-slate-600 dark:text-slate-300 transition-colors">{{ today_date }}</p>
+        </div>
+    </div>
+
+    <div class="glass-panel relative overflow-hidden p-6 rounded-2xl shadow-sm transition-all hover:shadow-md group">
+        <div class="absolute -right-4 -top-4 text-blue-200/50 dark:text-slate-700/30 transition-transform group-hover:scale-110 duration-500">
+            <svg class="w-28 h-28" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+        </div>
+        <div class="relative z-10 max-w-3xl">
+            <span class="inline-block px-2.5 py-1 rounded-md bg-blue-100/80 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-3">Quote of the Day</span>
+            <p id="daily-quote" class="text-lg md:text-xl text-slate-800 dark:text-slate-200 italic font-medium leading-relaxed"></p>
+            <p id="quote-author" class="text-xs text-slate-500 dark:text-slate-400 mt-3 font-semibold uppercase tracking-wider"></p>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-1 space-y-6">
+        <section class="glass-panel p-6 rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+            <h2 class="text-xs font-bold uppercase tracking-wider mb-3 text-slate-400 dark:text-slate-500">Mission Statement</h2>
+            <p class="text-slate-700 dark:text-slate-300 italic text-sm leading-relaxed">"To leverage research and technology for sustainable development and positive global impact."</p>
+        </section>
+
+        <section class="glass-panel p-6 rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+            <h2 class="text-xs font-bold uppercase tracking-wider mb-4 text-slate-400 dark:text-slate-500">Habit Balance (Analytics)</h2>
+            <div class="relative w-full h-48 flex justify-center">
+                <canvas id="habitChart"></canvas>
+            </div>
+        </section>
+
+        <section class="glass-panel p-6 rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+            <h2 class="text-xs font-bold uppercase tracking-wider mb-4 text-slate-400 dark:text-slate-500">Active Goals</h2>
+            <div class="space-y-4">
+                {% if not goals %}
+                    <p class="text-xs text-slate-400 dark:text-slate-500 italic">No goals active. Go to 'Goals' menu to add.</p>
+                {% endif %}
+                {% for goal in goals %}
+                <div class="group">
+                    <div class="flex justify-between text-sm mb-1.5">
+                        <span class="text-slate-700 dark:text-slate-300 font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ goal.title }}</span>
+                        <span class="text-blue-600 dark:text-blue-400 text-xs font-bold">{{ goal.progress }}%</span>
+                    </div>
+                    <div class="w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all duration-1000 ease-out" style="width: {{ goal.progress }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <div class="lg:col-span-2 space-y-6">
+        
+        <section class="glass-panel p-6 rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-xs font-bold uppercase tracking-wider mb-1 text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Focus Mode
+                    </h2>
+                    <p class="text-sm text-slate-600 dark:text-slate-400">Eliminate distractions and get to work.</p>
+                </div>
+                
+                <div class="flex items-center gap-6">
+                    <div id="timer-display" class="text-4xl font-extrabold text-slate-800 dark:text-slate-100 font-mono tracking-wider">
+                        25:00
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex gap-2">
+                            <button id="start-btn" onclick="startTimer()" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md transition font-semibold shadow-sm">Start</button>
+                            <button id="pause-btn" onclick="pauseTimer()" class="text-xs bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-md transition font-semibold shadow-sm hidden">Pause</button>
+                            <button onclick="resetTimer()" class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 px-3 py-1.5 rounded-md transition font-semibold">Reset</button>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="customTimer()" class="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">Set Custom</button>
+                            <span class="text-slate-300 dark:text-slate-600">|</span>
+                            <button onclick="setTimer(5)" class="text-[10px] uppercase font-bold text-green-600 dark:text-green-400 hover:underline cursor-pointer">Short Break</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-panel p-6 rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+            <h2 class="text-xs font-bold uppercase tracking-wider mb-4 text-slate-400 dark:text-slate-500">Action Plan (Important Tasks)</h2>
+            
+            <form action="/add" method="POST" class="flex flex-col gap-3 mb-6 bg-slate-100/50 dark:bg-slate-800/30 p-4 rounded-xl border border-slate-200/50 dark:border-slate-700/50 transition-colors">
+                <div class="flex flex-col md:flex-row gap-2">
+                    <input type="text" name="title" placeholder="What needs to be done?" required class="border border-slate-200 dark:border-slate-600 p-2.5 rounded-lg flex-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white/60 dark:bg-slate-900/60 text-slate-900 dark:text-white transition-colors">
+                    <input type="datetime-local" name="time_info" class="border border-slate-200 dark:border-slate-600 p-2.5 rounded-lg text-sm text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white/60 dark:bg-slate-900/60 cursor-pointer md:w-48 transition-colors">
+                    <input type="text" name="duration" placeholder="e.g. 2 hrs" class="border border-slate-200 dark:border-slate-600 p-2.5 rounded-lg text-sm text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white/60 dark:bg-slate-900/60 md:w-28 transition-colors">
+                </div>
+                <div class="flex justify-between items-center mt-1">
+                    <div class="flex gap-4">
+                        <label class="text-xs flex items-center cursor-pointer text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"><input type="checkbox" name="important" value="true" checked class="mr-1.5 w-3.5 h-3.5 accent-blue-600 rounded"> Important</label>
+                        <label class="text-xs flex items-center cursor-pointer text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"><input type="checkbox" name="urgent" value="true" class="mr-1.5 w-3.5 h-3.5 accent-red-500 rounded"> Urgent</label>
+                    </div>
+                    <button type="submit" class="text-xs bg-slate-900 dark:bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-slate-800 dark:hover:bg-blue-700 transition shadow-sm transform active:scale-95">Add Task</button>
+                </div>
+            </form>
+            
+            <ul class="space-y-3">
+                {% if not tasks %}
+                    <p class="text-xs text-slate-400 dark:text-slate-500 italic text-center py-4">No important tasks for today. Add some above!</p>
+                {% endif %}
+                {% for task in tasks %}
+                <li class="group flex items-center justify-between bg-white/40 dark:bg-slate-900/40 p-3.5 rounded-xl border border-slate-200/50 dark:border-slate-700/50 transition-all duration-200 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm">
+                    <div class="flex items-center">
+                        <a href="/complete/{{ task.id }}" class="mr-3.5">
+                            <input type="checkbox" {% if task.completed %}checked{% endif %} class="w-4 h-4 text-blue-600 rounded border-slate-300 dark:border-slate-600 cursor-pointer pointer-events-none">
+                        </a>
+                        <div>
+                            <span class="text-sm {% if task.completed %}line-through text-slate-400 dark:text-slate-500{% else %}text-slate-800 dark:text-slate-200 font-medium{% endif %} transition-colors">{{ task.title }}</span>
+                            {% if task.time_info %}
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-normal mt-0.5 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    {{ task.time_info }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a href="/delete/{{ task.id }}" class="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-500 font-bold text-sm px-2 transition-colors opacity-0 group-hover:opacity-100">✕</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="glass-panel p-6 rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+            <h2 class="text-xs font-bold uppercase tracking-wider mb-4 text-slate-400 dark:text-slate-500">Sharpen the Saw (4 Dimensions)</h2>
+            <form action="/add_habit" method="POST" class="flex flex-col md:flex-row gap-2 mb-6">
+                <input type="text" name="title" placeholder="Add a habit (e.g., Run 5km)" required class="border border-slate-200 dark:border-slate-600 p-2.5 rounded-lg flex-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white/60 dark:bg-slate-900/60 text-slate-900 dark:text-white transition-colors">
+                
+                <select name="category" required class="border border-slate-200 dark:border-slate-600 p-2.5 rounded-lg text-sm bg-white/60 dark:bg-slate-900/60 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer">
+                    <option value="Physical">Physical</option>
+                    <option value="Mental">Mental</option>
+                    <option value="Spiritual">Spiritual</option>
+                    <option value="Social">Social</option>
+                </select>
+                <button type="submit" class="text-xs bg-slate-900 dark:bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-slate-800 dark:hover:bg-blue-700 transition shadow-sm transform active:scale-95">Add Habit</button>
+            </form>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-green-50/50 dark:bg-green-900/10 p-4 rounded-xl border border-green-100 dark:border-green-900/30 transition-colors">
+                    <h3 class="text-xs font-bold text-green-700 dark:text-green-500 uppercase mb-3 flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg> Physical</h3>
+                    <ul class="space-y-2.5">
+                        {% for habit in habits['Physical'] %}
+                        <li class="group flex items-center justify-between text-sm">
+                            <label class="flex items-center cursor-pointer flex-1">
+                                <a href="/complete_habit/{{ habit.id }}" class="mr-2.5"><input type="checkbox" {% if habit.completed %}checked{% endif %} class="w-4 h-4 accent-green-600 rounded pointer-events-none"></a>
+                                <span class="{% if habit.completed %}line-through text-slate-400 dark:text-slate-600{% else %}text-slate-700 dark:text-slate-300{% endif %} transition-colors">{{ habit.title }}</span>
+                            </label>
+                            <a href="/delete_habit/{{ habit.id }}" class="text-green-300 dark:text-green-800 hover:text-green-600 dark:hover:text-green-400 text-xs font-bold opacity-0 group-hover:opacity-100 transition">✕</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30 transition-colors">
+                    <h3 class="text-xs font-bold text-blue-700 dark:text-blue-500 uppercase mb-3 flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg> Mental</h3>
+                    <ul class="space-y-2.5">
+                        {% for habit in habits['Mental'] %}
+                        <li class="group flex items-center justify-between text-sm">
+                            <label class="flex items-center cursor-pointer flex-1">
+                                <a href="/complete_habit/{{ habit.id }}" class="mr-2.5"><input type="checkbox" {% if habit.completed %}checked{% endif %} class="w-4 h-4 accent-blue-600 rounded pointer-events-none"></a>
+                                <span class="{% if habit.completed %}line-through text-slate-400 dark:text-slate-600{% else %}text-slate-700 dark:text-slate-300{% endif %} transition-colors">{{ habit.title }}</span>
+                            </label>
+                            <a href="/delete_habit/{{ habit.id }}" class="text-blue-300 dark:text-blue-800 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-bold opacity-0 group-hover:opacity-100 transition">✕</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="bg-purple-50/50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-900/30 transition-colors">
+                    <h3 class="text-xs font-bold text-purple-700 dark:text-purple-500 uppercase mb-3 flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg> Spiritual</h3>
+                    <ul class="space-y-2.5">
+                        {% for habit in habits['Spiritual'] %}
+                        <li class="group flex items-center justify-between text-sm">
+                            <label class="flex items-center cursor-pointer flex-1">
+                                <a href="/complete_habit/{{ habit.id }}" class="mr-2.5"><input type="checkbox" {% if habit.completed %}checked{% endif %} class="w-4 h-4 accent-purple-600 rounded pointer-events-none"></a>
+                                <span class="{% if habit.completed %}line-through text-slate-400 dark:text-slate-600{% else %}text-slate-700 dark:text-slate-300{% endif %} transition-colors">{{ habit.title }}</span>
+                            </label>
+                            <a href="/delete_habit/{{ habit.id }}" class="text-purple-300 dark:text-purple-800 hover:text-purple-600 dark:hover:text-purple-400 text-xs font-bold opacity-0 group-hover:opacity-100 transition">✕</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="bg-yellow-50/50 dark:bg-yellow-900/10 p-4 rounded-xl border border-yellow-100 dark:border-yellow-900/30 transition-colors">
+                    <h3 class="text-xs font-bold text-yellow-700 dark:text-yellow-500 uppercase mb-3 flex items-center gap-1.5"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg> Social</h3>
+                    <ul class="space-y-2.5">
+                        {% for habit in habits['Social'] %}
+                        <li class="group flex items-center justify-between text-sm">
+                            <label class="flex items-center cursor-pointer flex-1">
+                                <a href="/complete_habit/{{ habit.id }}" class="mr-2.5"><input type="checkbox" {% if habit.completed %}checked{% endif %} class="w-4 h-4 accent-yellow-500 rounded pointer-events-none"></a>
+                                <span class="{% if habit.completed %}line-through text-slate-400 dark:text-slate-600{% else %}text-slate-700 dark:text-slate-300{% endif %} transition-colors">{{ habit.title }}</span>
+                            </label>
+                            <a href="/delete_habit/{{ habit.id }}" class="text-yellow-300 dark:text-yellow-800 hover:text-yellow-600 dark:hover:text-yellow-400 text-xs font-bold opacity-0 group-hover:opacity-100 transition">✕</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<script>
+// Pomodoro Timer Logic (Updated for Customization)
+let timerInterval = null;
+let isRunning = false;
+let timeRemaining = 25 * 60; // Default
+
+const display = document.getElementById('timer-display');
+const startBtn = document.getElementById('start-btn');
+const pauseBtn = document.getElementById('pause-btn');
+
+// নতুন ফাংশন: ইনপুট থেকে কাস্টম টাইম সেট করা
+function customTimer() {
+    const min = prompt("How long would you like the session to be?", "25");
+    if (min && !isNaN(min)) {
+        setTimer(parseInt(min));
+    }
+}
+
+function updateDisplay() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    document.title = `${display.textContent} | Align Focus`;
+}
+
+function setTimer(minutes) {
+    clearInterval(timerInterval);
+    isRunning = false;
+    timeRemaining = minutes * 60;
+    updateDisplay();
+    startBtn.classList.remove('hidden');
+    pauseBtn.classList.add('hidden');
+}
+
+function startTimer() {
+    if (isRunning) return;
+    isRunning = true;
+    startBtn.classList.add('hidden');
+    pauseBtn.classList.remove('hidden');
+    
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateDisplay();
+        
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            isRunning = false;
+            alert("সেশন শেষ! এবার একটু বিরতি নিন।");
+            const breakMin = prompt("ব্রেক কত মিনিটের হবে?", "5");
+            setTimer(parseInt(breakMin) || 5);
+        }
+    }, 1000);
+}
+
+function pauseTimer() {
+    clearInterval(timerInterval);
+    isRunning = false;
+    startBtn.classList.remove('hidden');
+    pauseBtn.classList.add('hidden');
+}
+
+function resetTimer() {
+    setTimer(25); // রিসেট করলে ডিফল্ট ২৫ মিনিটে ফিরে যাবে
+}
+
+    // Chart and Quote logic below (unchanged)
+    const habitData = JSON.parse('{{ habit_counts | safe }}');
+    const isEmpty = habitData.every(item => item === 0);
+    const ctx = document.getElementById('habitChart').getContext('2d');
+    const getChartColors = () => {
+        const isDark = document.documentElement.classList.contains('dark');
+        return { text: isDark ? '#9ca3af' : '#64748b', border: isDark ? '#1e293b' : '#ffffff', empty: isDark ? '#334155' : '#f1f5f9' };
+    };
+    let colors = getChartColors();
+    Chart.defaults.color = colors.text;
+    const myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: ['Physical', 'Mental', 'Spiritual', 'Social'], datasets: [{ data: isEmpty ? [1] : habitData, backgroundColor: isEmpty ? [colors.empty] : ['#22c55e', '#3b82f6', '#a855f7', '#eab308'], borderWidth: 3, borderColor: colors.border, hoverOffset: 6 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, font: { size: 11, family: 'Urbanist, sans-serif' } } }, tooltip: { enabled: !isEmpty, backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 12, cornerRadius: 8 } }, cutout: '75%', animation: { animateScale: true, animateRotate: true, duration: 1000 } }
+    });
+    document.getElementById('theme-toggle').addEventListener('change', () => { setTimeout(() => { colors = getChartColors(); myChart.options.plugins.legend.labels.color = colors.text; myChart.data.datasets[0].borderColor = colors.border; if(isEmpty) myChart.data.datasets[0].backgroundColor = [colors.empty]; myChart.update(); }, 50); });
+
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+    document.getElementById('greeting-time').textContent = greeting;
+
+    const quotes = [
+        { q: "The key is not to prioritize what's on your schedule, but to schedule your priorities.", a: "Stephen Covey" },
+        { q: "Action is the foundational key to all success.", a: "Pablo Picasso" },
+        { q: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", a: "Aristotle" },
+        { q: "Do not wait for leaders; do it alone, person to person.", a: "Mother Teresa" },
+        { q: "The future depends on what you do today.", a: "Mahatma Gandhi" },
+        { q: "Focus on being productive instead of busy.", a: "Tim Ferriss" },
+        { q: "Great things are not done by impulse, but by a series of small things brought together.", a: "Vincent Van Gogh" }
+    ];
+    
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = (now - start) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+    const todaysQuote = quotes[dayOfYear % quotes.length];
+    
+    document.getElementById('daily-quote').textContent = `"${todaysQuote.q}"`;
+    document.getElementById('quote-author').textContent = `— ${todaysQuote.a}`;
+</script>
+{% endblock %}
