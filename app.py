@@ -480,10 +480,9 @@ def export_data():
     output.headers["Content-Disposition"] = "attachment; filename=Align_Data_Export.csv"
     output.headers["Content-type"] = "text/csv"
     return output
-with app.app_context():
-    db.create_all()
+
 
 if __name__ == '__main__':
-    app.run(debug=True)
-if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()  # এটি সার্ভার চালু হওয়ার সময় টেবিলগুলো তৈরি করে দেবে
     app.run(debug=True)
